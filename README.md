@@ -116,7 +116,7 @@ joblib
 ## ⚠️ Known Limitations
 
 - The model was trained on a **US used car dataset** and thus predictions are in **USD**
-- Years before **2000** are excluded from the year dropdown because the dataset has fewer than 20 records per year for 1996–1999, causing the linear model to extrapolate into negative prices for those years
+- The dataset has fewer than 20 records per year for 1996–1999, causing the linear model to extrapolate into negative prices for those years which later are updated to zero
 - The Lasso model is **linear** which may underperform on luxury/exotic cars whose pricing follows non-linear patterns
 - The `.pkl` was trained with **scikit-learn 1.6.1**, if you're running a newer version, you may see a version warning. Retrain the model to eliminate this
 - **No launch year validation** : the form does not prevent a user from selecting a year before the chosen model was launched (e.g. selecting year 2005 for a Tesla Model 3 which only exists from 2017 onwards), which may result in unreliable predictions
