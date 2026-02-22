@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="static/css/style.css">
+    <title>Car Price Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  </head>
+  <body class="bg-dark">
+    <div class="container">
+        <div class="row">
+            <div class="card mt-50" style="width:100%; height:100%">
+                <div class="header">
+                    <div class="col-12" style="text-align: center;">
+                        <h1>🚗 Car Price Predictor 💵</h1>
+                        <p class="subtitle">Fill in the details below to estimate your car's value</p>
+                        <hr>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <form method="post" accept-charset="utf-8">
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>🏷️ Brand of the Car</b></label>
+                            <select class="form-control" id="brands" name="brands" required onchange="load_car_models(this.value)">
+                                <option value="" disabled selected>Select Brand</option>
+                                {% for brand in brands %}
+                                    <option value="{{ brand }}">{{ brand }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>🚘 Model of the Car</b></label>
+                            <select class="form-control" id="car_model" name="car_model" required onchange="load_model_details(this.value)">
+                                <option value="" disabled selected>Select Model</option>
+                                {% for model in car_models %}
+                                    <option value="{{ model }}">{{ model }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>📅 Year of Purchase</b></label>
+                            <select class="form-control" id="year" name="year" required>
+                                <option value="" disabled selected>Select Year</option>
+                                {% for year in years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>🛣️ Mileage (in miles)</b></label>
+                            <input class="form-control" type="number" min="0" id="milage" name="milage" placeholder="Enter mileage e.g. 35000" required>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>⛽ Fuel Type</b></label>
+                            <select class="form-control" id="fuel_type" name="fuel_type" required disabled>
+                                <option value="" disabled selected>Select Model first</option>
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>⚙️ Engine Type</b></label>
+                            <select class="form-control" id="engine" name="engine" required disabled>
+                                <option value="" disabled selected>Select Model first</option>
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>🔧 Transmission</b></label>
+                            <select class="form-control" id="transmission" name="transmission" required disabled>
+                                <option value="" disabled selected>Select Model first</option>
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: left;">
+                            <label><b>☠️ Accident History</b></label>
+                            <select class="form-control" id="accidents" name="accidents" required>
+                                <option value="" disabled selected>Select Accident History</option>
+                                {% for opt in accident_options %}
+                                    <option value="{{ opt.value }}">{{ opt.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <br>
+
+                        <div class="col-10 form-group" style="text-align: center;">
+                            <button class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
+                        </div>
+
+                    </form>
+                    <br>
+                    <div class="row">
+                        <div class="col-12" style="text-align: center;">
+                            <h3><span id="prediction"></span></h3>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const brandModelMap = {{ brand_model_map | tojson }};
+
+    const modelDetailsMap = {{ model_details_map | tojson }};
+
+    function load_car_models(selectedBrand) {
+        var car_model = document.getElementById('car_model');
+
+        car_model.innerHTML = '<option value="" disabled selected>Select Model</option>';
+
+        reset_model_details();
+
+        if (brandModelMap[selectedBrand]) {
+            brandModelMap[selectedBrand].forEach(function(m) {
+                var opt = document.createElement("option");
+                opt.value = m;
+                opt.innerHTML = m;
+                car_model.options.add(opt);
+            });
+        }
+    }
+
+    function load_model_details(selectedModel) {
+        var fuelSelect  = document.getElementById('fuel_type');
+        var engSelect   = document.getElementById('engine');
+        var transSelect = document.getElementById('transmission');
+
+        fuelSelect.innerHTML  = '<option value="" disabled selected>Select Fuel Type</option>';
+        engSelect.innerHTML   = '<option value="" disabled selected>Select Engine</option>';
+        transSelect.innerHTML = '<option value="" disabled selected>Select Transmission</option>';
+
+        if (!selectedModel || !modelDetailsMap[selectedModel]) return;
+
+        var details = modelDetailsMap[selectedModel];
+
+        details.fuel_types.forEach(function(ft) {
+            var opt = document.createElement("option");
+            opt.value = ft.value;
+            opt.innerHTML = ft.label;
+            fuelSelect.options.add(opt);
+        });
+
+        details.engines.forEach(function(eng) {
+            var opt = document.createElement("option");
+            opt.value = eng;
+            opt.innerHTML = eng;
+            engSelect.options.add(opt);
+        });
+
+        details.transmissions.forEach(function(trans) {
+            var opt = document.createElement("option");
+            opt.value = trans;
+            opt.innerHTML = trans;
+            transSelect.options.add(opt);
+        });
+
+        fuelSelect.disabled  = false;
+        engSelect.disabled   = false;
+        transSelect.disabled = false;
+
+        if (details.fuel_types.length === 1)   fuelSelect.selectedIndex  = 1;
+        if (details.engines.length === 1)       engSelect.selectedIndex   = 1;
+        if (details.transmissions.length === 1) transSelect.selectedIndex = 1;
+    }
+
+    function reset_model_details() {
+        ['fuel_type', 'engine', 'transmission'].forEach(function(id) {
+            var el = document.getElementById(id);
+            el.innerHTML = '<option value="" disabled selected>Select Model first</option>';
+            el.disabled = true;
+        });
+    }
+
+    function form_handler(event) {
+        event.preventDefault();
+    }
+
+    function send_data() {
+        document.querySelector('form').addEventListener('submit', form_handler);
+
+        var form_data = new FormData(document.querySelector('form'));
+        var xhr = new XMLHttpRequest();
+
+        xhr.open('POST', '/predict', true);
+        document.getElementById("prediction").innerHTML = "Predicting the Price...";
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                if (xhr.status == 200) {
+                    document.getElementById("prediction").innerHTML = "Predicted Price: $ " + xhr.responseText;
+                } else {
+                    document.getElementById("prediction").innerHTML = "Error: " + xhr.responseText;
+                }
+            }
+        }
+
+        xhr.onload = function() {};
+        xhr.send(form_data);
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmFzMaYJq+8vHHVJUKf7XGF5O7I" crossorigin="anonymous"></script>
+  </body>
+</html>
