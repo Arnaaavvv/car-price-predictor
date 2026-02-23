@@ -3,6 +3,7 @@
 A machine learning-powered web application built with Flask that predicts used car prices based on key vehicle attributes. The model is trained on a dataset of 3,547 real used car listings spanning 48 brands and 1,686 models.
 
 ---
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 
 ## Preview
 
@@ -58,9 +59,6 @@ car-price-predictor/
 ---
 
 ## ⚙️ Setup & Installation
-
-### Prerequisites
-- Python 3.8+
 
 ### 1. Clone the repository
 ```bash
